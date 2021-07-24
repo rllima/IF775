@@ -4,6 +4,7 @@ import random
 import getopt
 import sys
 import csv
+import scipy.stats as st
 
 
 class HLL():
@@ -23,8 +24,11 @@ class HLL():
 
         return 0.7213 / (1.0 + 1.079 / (1 << p))
 
-    def __init__(self, error_bound, error_probability):
-        self.p = int(np.ceil(np.log2((1.04 / error_bound) ** 2)))
+    def __init__(self, eps, delta):
+        prob = 1 - (delta/2)
+        z = st.norm.ppf(prob)
+        eps /= z
+        self.p = int(np.ceil(np.log2((1.04 / eps) ** 2)))
         self.m = 1 << self.p
         self.alpha = self.__get_alpha(self.p)
         self.seed = random.randrange(0, 1 << self.p)
@@ -35,18 +39,22 @@ class HLL():
         x = xxhash.xxh32(bytes(value),seed=self.seed).intdigest()
         j = x & ((1 << self.p) - 1)
         # Remove those p bits
+        #Ex: If p = 4
+        #11111111
+        #00001111
         w = x >> self.p
         # Find the first 0 in the remaining bit pattern
-        self.M[j] = max(self.M[j], self.__get_rho(w, self.p))
+        self.M[j] = max(self.M[j], self.__get_rho(w) - self.p)
 
 
-    def __get_rho(self, w, p):
-        mask = 1 << p
-        lsb = 0
-        while (w & mask) == 0:
-            lsb += 1
-            w =  w << 1
-        return lsb + 1
+    def __get_rho(self, w):
+        # 11111111
+        # 00011111 
+        rho = 32 - w.bit_length() + 1
+        if rho <= 0:
+            raise ValueError('w overflow')
+
+        return rho
 
     def estimate(self):
         """ Returns the estimate of the cardinality """
@@ -61,7 +69,7 @@ class HLL():
         elif E <= float(int(1) << 32) / 30.0:
             return int(E)
         else:
-            return - (1 << self.p) * np.log(1.0 - E / (1 << self.p))
+            return - self.m * np.log(1.0 - E / self.m)
 
     def __linear_counting(self, V):
         return self.m * np.log(self.m / float(V))
@@ -90,20 +98,21 @@ def main():
         print('Something went wrong!')
         sys.exit(2)
 
-    #unique = {}
+    unique = {}
     hll = HLL(eps,delta)
     print("Stating insertion...")  
     with open(path) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
+        print(csv_reader[0])
         next(csv_reader)
         for row in csv_reader:
-            #if row[8] not in unique:
-              #  unique[row[target]] = "a"
+            if row[8] not in unique:
+                unique[row[target]] = "a"
             hll.insert(int(row[target]))
     print("Finish insertion\nEstimating...")
     estimate = int(hll.estimate())
-   # real = len(unique)
-    print(f'HLL estimation: {estimate}\nReal Counting:')
+    real = len(unique)
+    print(f'HLL estimation: {estimate}\nReal Counting:{real}')
 
 
 if __name__ == "__main__":
