@@ -48,8 +48,6 @@ class HLL():
 
 
     def __get_rho(self, w):
-        # 11111111
-        # 00011111 
         rho = 32 - w.bit_length() + 1
         if rho <= 0:
             raise ValueError('w overflow')
@@ -74,6 +72,17 @@ class HLL():
     def __linear_counting(self, V):
         return self.m * np.log(self.m / float(V))
 
+def help():
+    MESSAGE = """
+                To execute:
+                    python hll.py --target
+                        --target: Column to estimate unique values (int value)
+                        --eps: erro_bound
+                        --delta: erro_probability
+                        --file: path do csv value
+             """
+    print(MESSAGE)
+
 
 def main():
     argv = sys.argv[1:]
@@ -93,32 +102,25 @@ def main():
             elif opt in ('--f','--file'):
                 path = arg
             elif opt == 'help':
-                print("USAGE")
+                help()
     except getopt.GetoptError as e:
-        print('Something went wrong!')
+        print('Something went wrong! Use help to see acepted arguments')
         sys.exit(2)
 
-    unique = {}
     hll = HLL(eps,delta)
     print("Stating insertion...")  
     with open(path) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
-        print(csv_reader[0])
         next(csv_reader)
         for row in csv_reader:
-            if row[8] not in unique:
-                unique[row[target]] = "a"
             hll.insert(int(row[target]))
-    print("Finish insertion\nEstimating...")
+    print("Finish insertion!")
     estimate = int(hll.estimate())
-    real = len(unique)
-    print(f'HLL estimation: {estimate}\nReal Counting:{real}')
+    print(f'HLL estimation: {estimate}')
 
 
 if __name__ == "__main__":
     main()
-
-
 
 
 
