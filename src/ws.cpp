@@ -230,7 +230,51 @@ int main()
 	string input_file, field_value;
 
 	string foo;
-	cin >> foo >> id >> foo >> weight >> foo >> field >> field_value >> foo >> size >> input_file;
+	int aux = 0;
+
+	while(1) {
+		cin >> foo;
+		if (foo.compare("--id")!=0) {
+			cout << "Invalid Input\n";
+			break;
+		}
+		cin >> id;
+		if (id != 0) {
+			cout << "Invalid Input\n";
+			break;
+		}
+		cin >> foo;
+		if (foo.compare("--weight")!=0){
+			cout << "Invalid Input\n";
+			break;
+		}
+		cin >> weight;
+		if (weight == 1 || weight == 2 || weight == 8 || weight > 8 || weight < 0) {
+			cout << "Invalid Input\n";
+			break;
+		}
+		cin >> foo;
+		if (foo.compare("--filter")) {
+			cout << "Invalid Input\n";
+			break;
+		}
+		cin >> field;
+		if (field > 8 || field < 0) {
+			cout << "Invalid Input\n";
+			break;
+		}
+		cin >> field_value;
+		cin >> foo;
+		if (foo.compare("--size")!=0) {
+			cout << "Invalid Input\n";
+			break;
+		}
+		cin >> size;
+		cin >> input_file;
+		aux = 1; // só serve pra dizer q a entrada foi colocada corretamente
+		break;
+	}
+
 	//cout << id << weight << field << field_value << size << input_file;
 
 	ifstream file(input_file);
@@ -263,8 +307,8 @@ int main()
 	// 		cout << ", ";
 	// }
 	// cout << "]\n";
-
-	cout << ws.check_weight() << "\n";
-
+	if (aux)
+		cout << ws.check_weight() << "\n";
+	
 	return 0;
 }
