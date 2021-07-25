@@ -254,7 +254,7 @@ int main()
 			break;
 		}
 		cin >> foo;
-		if (foo.compare("--filter")) {
+		if (foo.compare("--filter")!=0) {
 			cout << "Invalid Input\n";
 			break;
 		}
@@ -309,6 +309,6 @@ int main()
 	// cout << "]\n";
 	if (aux)
 		cout << ws.check_weight() << "\n";
-	
+
 	return 0;
 }
