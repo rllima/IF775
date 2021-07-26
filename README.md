@@ -7,6 +7,7 @@ Foram escolhidos dois algoritmos para implementação.
 
 
 ## Para execução do HLL Python:
+* Instalação de libs
  - ### pip install -r requirements.txt
  - ### python hll.py --target x --eps y --file path_to_file
 
