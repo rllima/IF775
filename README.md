@@ -13,3 +13,8 @@ Foram escolhidos dois algoritmos para implementação.
 
 ## Para execução do Weighted Sampling C++:
 
+- g++ -o ws weighted_sample.cpp
+- ./ws
+- --id [id] --weight [weight] --filter [field.no]  [field_value] --size [size] [arquivo.csv]
+
+OBS: É essencial que a ordem de inserção dos atributos no Weighted Sampling seja obedecida.
