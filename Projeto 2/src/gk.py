@@ -117,6 +117,7 @@ class GK():
 
             
 def main():
+    
     def test():
         eps = 0.2
         arr = [1, 4, 2, 8, 5, 7, 6, 7, 6, 7, 2, 1]
@@ -142,24 +143,24 @@ def main():
 
     #test()
     argv = sys.argv[1:]
-    val = str
-    eps = float
-    path = str
-    input_path = str
-    query_type = str
-    params = list
-    gt = list
+    val = 0
+    eps = 0.0
+    path = ""
+    input_path = ""
+    query_type = ""
+    params = []
+    gt = []
     try:
-        opts, args = getopt.gnu_getopt(argv,'v:e:t:f:pih',['val=',"type=",'eps=','file=','params','input','help',])
+        opts, args = getopt.gnu_getopt(argv,'v:e:t:f:pih',['val=',"type=",'eps=','file=','params=','input=','help',])
         for opt, arg in opts:
             if opt in ('--v', '--val'):
-                val = arg
+                val = int(arg)
             elif opt in ('--e', '--eps'):
                 eps = float(arg)
             elif opt in ('--t', '--type'):
                 query_type = arg
             elif opt in ('--f','--file'):
-                path = arg
+                path = str(arg)
             elif opt in ('--p','--params'):
                 params = str(arg).split(" ")
             elif opt in ('--i','--input'):
@@ -175,28 +176,30 @@ def main():
         csv_reader = csv.reader(csv_file, delimiter=',')
         next(csv_reader)
         for row in csv_reader:
-            gk.update(row[val])
-            gt.append(row[val])
-    test = sorted(test)
-    
+            gk.update(float(row[val]))
+            gt.append(float(row[val]))
+    gt = sorted(gt)
     if params:
         for i in params:
             if query_type == "rank":
-                rank = gk.rank(i)
-                real_rank = test.index(i)
-                error = abs(rank - real_rank)
-                print(f'Query: {i} ,Estimated_rank: {gk.rank(i)}, Real_rank: {real_rank}, error: {error}')
+                if i in gt:
+                    rank = gk.rank(i)
+                    real_rank = gt.index(i)
+                    error = abs(rank - real_rank)
+                    print(f'Query: {i} ,Estimated_rank: {gk.rank(i)}, Real_rank: {real_rank}, error: {error}')
             elif query_type == "quant":
-                print(f'Query quantile: {row},result: { gk.quantile(row)}')   
+                print(f'Query quantile: {row},result: { gk.quantile(row)}')  
+    print(input_path) 
     if input_path:
         with open(input_path) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for row in csv_reader:
                 if query_type == "rank":
-                    rank = gk.rank(float(row))
-                    real_rank = test.index(float(row))
-                    error = abs(rank - real_rank)
-                    print(f'Query: {i} ,Estimated_rank: {gk.rank(float(row))}, Real_rank: {real_rank}, error: {error}')
+                    if i in gt:
+                        rank = gk.rank(float(row))
+                        real_rank = gt.index(float(row))
+                        error = abs(rank - real_rank)
+                        print(f'Query: {i} ,Estimated_rank: {gk.rank(float(row))}, Real_rank: {real_rank}, error: {error}')
                 elif query_type == "quant":
                     print(f'Query quantile: {float(row)},result: { gk.quantile(float(row))}')   
 
