@@ -59,6 +59,7 @@ class GK():
                 self._max = value
             if self._count % self._compress_threshold == 0:
                     self.compress()
+    
 
                  
     def compress(self):
@@ -176,17 +177,21 @@ def main():
         csv_reader = csv.reader(csv_file, delimiter=',')
         next(csv_reader)
         for row in csv_reader:
-            gk.update(float(row[val]))
-            gt.append(float(row[val]))
+            gk.update(int(row[val]))
+            gt.append(int(row[val]))
+    print("Summary Read")
+    for i in gk.entries[:100]:
+        print(i)
     gt = sorted(gt)
     if params:
         for i in params:
+            query = int(i)
             if query_type == "rank":
-                if i in gt:
-                    rank = gk.rank(i)
-                    real_rank = gt.index(i)
+                if query in gt:
+                    rank = gk.rank(query)
+                    real_rank = gt.index(query)
                     error = abs(rank - real_rank)
-                    print(f'Query: {i} ,Estimated_rank: {gk.rank(i)}, Real_rank: {real_rank}, error: {error}')
+                    print(f'Query: {i} ,Estimated_rank: {gk.rank(query)}, Real_rank: {real_rank}, error: {error}, Max erro: {gk.eps * gk._count}')
             elif query_type == "quant":
                 print(f'Query quantile: {row},result: { gk.quantile(row)}')  
     print(input_path) 
