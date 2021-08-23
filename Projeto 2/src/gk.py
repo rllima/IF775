@@ -3,7 +3,7 @@ import sys
 import csv
 import time
 import math
-# import numpy as np
+import numpy as np
 
 
 class Tuple():
@@ -21,8 +21,8 @@ class GK():
         self.eps = eps
         self.entries = list()
         self._count = 0 
-        self._min = 5000
-        self._max = 0
+        self._min = np.inf
+        self._max = -np.inf
         self._compress_threshold = int(1.0 / self.eps) + 1
 
     def __len__(self):
@@ -52,14 +52,14 @@ class GK():
             else:
                 self.entries.append(Tuple(value,1,delta))
                 self.entries = sorted(self.entries, key = lambda x: x.value)
-                self.compress()
-
+                
             if value < self._min:
                 self._min = value
             if value > self._max:
                 self._max = value
-        # if self._count % self._compress_threshold == 0:
-        #     self.merge_compress()
+            if self._count % self._compress_threshold == 0:
+                    self.compress()
+
                  
     def compress(self):
         remove_threshold = float(2.0 * self.eps * (self._count - 1))
@@ -78,14 +78,13 @@ class GK():
         self.entries = sorted(self.entries, key = lambda x: x.value)
                                   
     def quantile(self, q):
-        """Calculate quantile q."""
         if not (0 <= q <= 1):
             raise ValueError("q must be a value in [0, 1].")
 
         if self._count == 0:
             raise ValueError("GK sketch does not contain values.")
 
-        rank = int(q * (self._count - 1) + 1)
+        rank = int(q * (self._count))
         spread = int(self.eps * (self._count - 1))
         g_sum = 0.0
         i = 0
@@ -118,36 +117,6 @@ class GK():
 
             
 def main():
-    test()
-    # argv = sys.argv[1:]
-    # val = str
-    # eps = float
-    # path = str
-    # try:
-    #     opts, args = getopt.gnu_getopt(argv,'v:e:d:fh',['val=','eps=','file=','help',])
-    #     for opt, arg in opts:
-    #         if opt in ('--v', '--val'):
-    #             val = arg
-    #         elif opt in ('--e', '--eps'):
-    #             eps = float(arg)
-    #         elif opt in ('--f','--file'):
-    #             path = arg
-    #         elif opt == 'help':
-    #             help()
-    # except getopt.GetoptError as e:
-    #     print('Something went wrong! Use help to see acepted arguments')
-    #     sys.exit(2)
-
-        
-    # print (val,eps)
-    # gk = GK(eps)
-    # with open(path) as csv_file:
-    #     csv_reader = csv.reader(csv_file, delimiter=',')
-    #     next(csv_reader)
-    #     for row in csv_reader:
-    #         print(row[val])
-    #         gk.update(row[val])
-
     def test():
         eps = 0.2
         arr = [1, 4, 2, 8, 5, 7, 6, 7, 6, 7, 2, 1]
@@ -166,12 +135,78 @@ def main():
             real_rank = test.index(i)
             error = abs(rank - real_rank)
             print(f'Query: {i} ,Rank: {gk.rank(i)}, Real_rank: {real_rank}, error: {error}')
-            print("Real index:", test.index(i))
+        
+        quantiles = np.arange(0, 1, 0.1).tolist()
+        for quant in quantiles:
+            print(f'Query quantile: {quant},result: { gk.quantile(quant)}')
+
+    #test()
+    argv = sys.argv[1:]
+    val = str
+    eps = float
+    path = str
+    input_path = str
+    query_type = str
+    params = list
+    gt = list
+    try:
+        opts, args = getopt.gnu_getopt(argv,'v:e:t:f:pih',['val=',"type=",'eps=','file=','params','input','help',])
+        for opt, arg in opts:
+            if opt in ('--v', '--val'):
+                val = arg
+            elif opt in ('--e', '--eps'):
+                eps = float(arg)
+            elif opt in ('--t', '--type'):
+                query_type = arg
+            elif opt in ('--f','--file'):
+                path = arg
+            elif opt in ('--p','--params'):
+                params = str(arg).split(" ")
+            elif opt in ('--i','--input'):
+                input_path = str(arg)
+            elif opt == 'help':
+                help()
+    except getopt.GetoptError as e:
+        print('Something went wrong! Use help to see acepted arguments')
+        sys.exit(2)
+
+    gk = GK(eps)
+    with open(path) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        next(csv_reader)
+        for row in csv_reader:
+            gk.update(row[val])
+            gt.append(row[val])
+    test = sorted(test)
+    
+    if params:
+        for i in params:
+            if query_type == "rank":
+                rank = gk.rank(i)
+                real_rank = test.index(i)
+                error = abs(rank - real_rank)
+                print(f'Query: {i} ,Estimated_rank: {gk.rank(i)}, Real_rank: {real_rank}, error: {error}')
+            elif query_type == "quant":
+                print(f'Query quantile: {row},result: { gk.quantile(row)}')   
+    if input_path:
+        with open(input_path) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            for row in csv_reader:
+                if query_type == "rank":
+                    rank = gk.rank(float(row))
+                    real_rank = test.index(float(row))
+                    error = abs(rank - real_rank)
+                    print(f'Query: {i} ,Estimated_rank: {gk.rank(float(row))}, Real_rank: {real_rank}, error: {error}')
+                elif query_type == "quant":
+                    print(f'Query quantile: {float(row)},result: { gk.quantile(float(row))}')   
+
 
     
+
+                
+    
  
-           
-          
+    
 if __name__ == "__main__":
     main()
 
