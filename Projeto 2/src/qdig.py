@@ -326,7 +326,7 @@ def main():
         # end for
 
     fim = time.time()
-    print("tempo = ", fim - inicio)
+    #print("tempo = ", fim - inicio)
     # ---------------------- QUERIES FIM ----------------------
 
 
